@@ -1,3 +1,7 @@
+![SentinelAI Banner](images/banner.png)
+
+---
+
 \# SentinelAI – AI Powered API Security Platform
 
 
