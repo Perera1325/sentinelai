@@ -1,4 +1,7 @@
-![SentinelAI Banner](images/banner.png)
+![SentinelAI Banner](banner.png)
+
+---
+
 
 ---
 
