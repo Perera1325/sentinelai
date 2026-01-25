@@ -21,5 +21,13 @@ class TrafficLog(Base):
     path = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
+class Alert(Base):
+    __tablename__ = "alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ip = Column(String)
+    reason = Column(String)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
 def init_db():
     Base.metadata.create_all(bind=engine)

@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request
-from db.database import SessionLocal, TrafficLog, init_db
+from db.database import SessionLocal, TrafficLog, Alert, init_db
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 app = FastAPI(title="SentinelAI API Gateway")
 
@@ -38,3 +40,40 @@ def get_logs():
         {"ip": l.ip, "path": l.path, "timestamp": l.timestamp}
         for l in logs
     ]
+
+@app.get("/alerts")
+def get_alerts():
+    db = SessionLocal()
+    alerts = db.query(Alert).all()
+    db.close()
+
+    return [
+        {"ip": a.ip, "reason": a.reason, "timestamp": a.timestamp}
+        for a in alerts
+    ]
+
+@app.get("/detect")
+def detect_attacks():
+    db = SessionLocal()
+
+    one_minute_ago = datetime.utcnow() - timedelta(minutes=1)
+
+    results = (
+        db.query(TrafficLog.ip, func.count(TrafficLog.id).label("count"))
+        .filter(TrafficLog.timestamp >= one_minute_ago)
+        .group_by(TrafficLog.ip)
+        .all()
+    )
+
+    flagged = []
+
+    for ip, count in results:
+        if count > 10:
+            alert = Alert(ip=ip, reason="High request rate")
+            db.add(alert)
+            flagged.append(ip)
+
+    db.commit()
+    db.close()
+
+    return {"flagged_ips": flagged}
